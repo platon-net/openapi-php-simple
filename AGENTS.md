@@ -6,7 +6,7 @@ This repository is a small PHP library for REST/OpenAPI APIs.
 
 - `src/API.php` contains the `API` cURL client class and all current library behavior.
 - `tests/` contains standalone CLI usage examples, not PHPUnit tests.
-- `README.md` documents installation, GET/POST usage, authentication, and examples.
+- `README.md` documents installation, HTTP method usage, authentication, constructor options, and examples.
 - `LICENSE` contains the project license.
 
 Keep library code under `src/`. Place executable examples under `tests/` using descriptive `test-*.php` names.
@@ -44,6 +44,8 @@ Match `src/API.php`:
 - Use classic PHP array syntax, for example `array('Accept: application/json')`.
 - Use camelCase for methods and private helpers, such as `filterEmpty()` and `errorMessage()`.
 - Keep the public API small and explicit: `get()`, `post()`, `patch()`, `delete()`.
+- Keep constructor behavior documented when changing `$timeout` or `$options` keys such as `ssl_verify_peer`, `ssl_verify_host`, and `ca_file`.
+- Preserve JSON request/response handling, Bearer auth, query filtering, and the automatic `X-Forwarded-For` header unless the behavior change is intentional and documented.
 - Throw `Exception` for transport, JSON, and HTTP failures.
 - In examples, include the client with `require_once __DIR__.'/../src/API.php';`.
 
@@ -59,6 +61,8 @@ No test framework is configured yet. Files in `tests/` are runnable examples:
 - `test-error-handling.php` catches an expected unauthorized response.
 
 Until automated tests exist, run `php -l` on changed PHP files and one relevant example script.
+
+For documentation-only changes, at minimum inspect examples for consistency with the public API and run PHP syntax checks if PHP files were touched.
 
 ## Commit & Pull Request Guidelines
 

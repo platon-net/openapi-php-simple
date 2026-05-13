@@ -3,8 +3,9 @@
 PHP library for easy integration with OpenAPI / REST APIs.
 
 The repository contains a lightweight cURL client in `src/API.php`. It supports
-JSON requests, JSON responses, Bearer authentication, query parameters, and
-basic exception handling for transport, JSON, and HTTP errors.
+JSON requests, JSON responses, Bearer authentication, query parameters,
+configurable timeouts, SSL verification options, CA files, and basic exception
+handling for transport, JSON, and HTTP errors.
 
 ## Installation
 
@@ -39,6 +40,24 @@ $response = $api->get('/system/hello');
 print_r($response);
 ```
 
+### GET request with query parameters
+
+Pass query parameters as the second argument. Parameters with `null` or empty
+string values are skipped before the URL is built.
+
+```php
+require_once __DIR__.'/src/API.php';
+
+$api = new API('https://setup.platon.sk/api');
+$response = $api->get('/vehicle/events', array(
+	'since' => '2026-01-01 00:00:00',
+	'limit' => 20,
+	'empty' => '',
+));
+
+print_r($response);
+```
+
 ### POST request
 
 ```php
@@ -51,6 +70,30 @@ $response = $api->post('/oauth/requests', array(
 	'app_url_return' => 'https://example.com/oauth-return',
 	'scopes' => array('vehicle:read'),
 ));
+
+print_r($response);
+```
+
+### PATCH request
+
+```php
+require_once __DIR__.'/src/API.php';
+
+$api = new API('https://setup.platon.sk/api', 'YOUR_API_TOKEN');
+$response = $api->patch('/example/resource/123', array(
+	'name' => 'Updated name',
+));
+
+print_r($response);
+```
+
+### DELETE request
+
+```php
+require_once __DIR__.'/src/API.php';
+
+$api = new API('https://setup.platon.sk/api', 'YOUR_API_TOKEN');
+$response = $api->delete('/example/resource/123');
 
 print_r($response);
 ```
@@ -71,6 +114,27 @@ print_r($response);
 
 Use tokens with the scopes required by the selected endpoint. Do not commit real
 tokens to the repository.
+
+## Constructor Options
+
+The constructor accepts the base URL, optional Bearer token, timeout in seconds,
+and optional cURL SSL settings:
+
+```php
+$api = new API('https://setup.platon.sk/api', 'YOUR_API_TOKEN', 30, array(
+	'ssl_verify_peer' => true,
+	'ssl_verify_host' => true,
+	'ca_file' => __DIR__.'/cacert.pem',
+));
+```
+
+- `ssl_verify_peer` controls `CURLOPT_SSL_VERIFYPEER` and defaults to `true`.
+- `ssl_verify_host` controls `CURLOPT_SSL_VERIFYHOST` and defaults to `true`.
+- `ca_file` sets `CURLOPT_CAINFO` when peer verification is enabled.
+
+The client sends `Accept: application/json` on every request, adds
+`Content-Type: application/json` when a JSON body is present, and includes
+`X-Forwarded-For` from `$_SERVER` when a client IP is available.
 
 ## Examples
 
@@ -94,5 +158,7 @@ The library requires PHP with the cURL extension enabled. It is written in a
 minimal style and is suitable for PHP 8+ projects.
 
 Methods throw `Exception` when cURL fails, the response is not valid JSON, or
-the API returns a non-2xx HTTP status. Wrap calls in `try` / `catch` when
-handling user-facing flows.
+the API returns a non-2xx HTTP status. HTTP error messages prefer response
+fields named `msg`, `message`, or `error`, falling back to
+`Control Panel API HTTP <status>`. Wrap calls in `try` / `catch` when handling
+user-facing flows.

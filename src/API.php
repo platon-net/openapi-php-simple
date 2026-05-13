@@ -10,12 +10,18 @@ class API
 	private $baseUrl;
 	private $accessToken;
 	private $timeout;
+	private $sslVerifyPeer;
+	private $sslVerifyHost;
+	private $caFile;
 
-	public function __construct($baseUrl, $accessToken = null, $timeout = 20)
+	public function __construct($baseUrl, $accessToken = null, $timeout = 20, $options = array())
 	{
 		$this->baseUrl = rtrim($baseUrl, '/');
 		$this->accessToken = $accessToken;
 		$this->timeout = $timeout;
+		$this->sslVerifyPeer = !isset($options['ssl_verify_peer']) || (bool)$options['ssl_verify_peer'];
+		$this->sslVerifyHost = !isset($options['ssl_verify_host']) || (bool)$options['ssl_verify_host'];
+		$this->caFile = isset($options['ca_file']) ? $options['ca_file'] : null;
 	}
 
 	public function get($path, $query = array())
@@ -66,7 +72,11 @@ class API
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerifyPeer);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerifyHost ? 2 : 0);
+		if ($this->sslVerifyPeer && $this->caFile !== null && strlen($this->caFile) > 0) {
+			curl_setopt($ch, CURLOPT_CAINFO, $this->caFile);
+		}
 		if ($data !== null) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 		}
