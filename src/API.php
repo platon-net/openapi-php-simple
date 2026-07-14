@@ -3,6 +3,7 @@
  * API.php
  *
  * Lightweight cURL client for REST API.
+ * https://github.com/platon-net/openapi-php-simple
  */
 
 class API
