@@ -85,7 +85,7 @@ class API
 		$body = curl_exec($ch);
 		$curlError = curl_error($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
+		unset($ch);
 
 		if ($body === false) {
 			throw new Exception($curlError);
